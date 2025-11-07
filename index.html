@@ -4,12 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Everything Astronomy — w/ Aditi Sahay</title>
-  
-  <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
-  
   <style>
-    /* Reset */
     * {
       margin: 0;
       padding: 0;
@@ -17,13 +13,12 @@
     }
 
     body {
-      background-color: black;
       overflow: hidden;
+      background: radial-gradient(circle at center, #080012 0%, #000 80%);
       color: #f5f5f5;
       font-family: 'Orbitron', sans-serif;
     }
 
-    /* Canvas Black Hole */
     canvas {
       position: fixed;
       top: 0;
@@ -31,7 +26,6 @@
       z-index: 0;
     }
 
-    /* Title Overlay */
     .title {
       position: absolute;
       top: 40%;
@@ -42,9 +36,15 @@
       text-shadow: 0 0 20px #00fff2, 0 0 40px #00fff2;
       font-size: 2rem;
       letter-spacing: 2px;
+      z-index: 2;
+      animation: glowPulse 3s infinite alternate ease-in-out;
     }
 
-    /* Navigation */
+    @keyframes glowPulse {
+      from { text-shadow: 0 0 15px #00fff2; }
+      to { text-shadow: 0 0 40px #00fff2, 0 0 80px #00fff2; }
+    }
+
     nav {
       position: absolute;
       bottom: 10%;
@@ -65,13 +65,13 @@
 
     nav a:hover {
       color: #00fff2;
-      text-shadow: 0 0 12px #00fff2, 0 0 24px #00fff2;
+      text-shadow: 0 0 15px #00fff2, 0 0 30px #00fff2;
       transform: scale(1.1);
     }
   </style>
 </head>
 <body>
-  <canvas id="blackhole"></canvas>
+  <canvas id="universe"></canvas>
 
   <div class="title">
     <h1>Everything Astronomy</h1>
@@ -87,10 +87,13 @@
   </nav>
 
   <script>
-    const canvas = document.getElementById("blackhole");
+    const canvas = document.getElementById("universe");
     const ctx = canvas.getContext("2d");
 
-    let w, h;
+    let w, h, stars = [], mouse = { x: 0, y: 0 };
+    const numStars = 500;
+    const blackHole = { x: window.innerWidth / 2, y: window.innerHeight / 2, radius: 80 };
+
     function resize() {
       w = canvas.width = window.innerWidth;
       h = canvas.height = window.innerHeight;
@@ -98,34 +101,66 @@
     window.addEventListener("resize", resize);
     resize();
 
-    let time = 0;
+    window.addEventListener("mousemove", e => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+    });
 
-    function drawBlackHole() {
-      ctx.clearRect(0, 0, w, h);
-      const cx = w / 2;
-      const cy = h / 2;
-
-      // Create the swirling black hole
-      for (let i = 0; i < 200; i++) {
-        const angle = i * 0.1 + time * 0.02;
-        const radius = 100 + i * 2;
-        const x = cx + Math.cos(angle) * radius;
-        const y = cy + Math.sin(angle) * radius;
-
-        const gradient = ctx.createRadialGradient(cx, cy, 10, cx, cy, radius);
-        gradient.addColorStop(0, "rgba(0,0,0,1)");
-        gradient.addColorStop(1, "rgba(0,0,0,0)");
-        ctx.strokeStyle = `rgba(0,255,242,${0.02 + i / 3000})`;
-        ctx.beginPath();
-        ctx.arc(cx, cy, radius, angle, angle + 0.05);
-        ctx.stroke();
+    class Star {
+      constructor() {
+        this.reset();
       }
 
-      time += 1;
-      requestAnimationFrame(drawBlackHole);
+      reset() {
+        this.x = Math.random() * w;
+        this.y = Math.random() * h;
+        this.z = Math.random() * w;
+        this.size = Math.random() * 2;
+        this.speed = 0.5 + Math.random() * 0.8;
+        this.orbit = Math.random() * 2 * Math.PI;
+      }
+
+      draw() {
+        const dx = this.x - blackHole.x;
+        const dy = this.y - blackHole.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        const orbitSpeed = 0.0002 * (1000 / (distance + 50));
+
+        this.orbit += orbitSpeed;
+
+        this.x = blackHole.x + Math.cos(this.orbit) * distance;
+        this.y = blackHole.y + Math.sin(this.orbit) * distance;
+
+        ctx.beginPath();
+        ctx.fillStyle = `rgba(0,255,242,${0.4 + Math.random() * 0.6})`;
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
     }
 
-    drawBlackHole();
+    for (let i = 0; i < numStars; i++) stars.push(new Star());
+
+    function animate() {
+      ctx.fillStyle = "rgba(0,0,0,0.25)";
+      ctx.fillRect(0, 0, w, h);
+
+      // Black hole core
+      const pulse = Math.sin(Date.now() * 0.002) * 10 + blackHole.radius;
+      const grad = ctx.createRadialGradient(blackHole.x, blackHole.y, 0, blackHole.x, blackHole.y, pulse);
+      grad.addColorStop(0, "rgba(0,0,0,1)");
+      grad.addColorStop(0.6, "rgba(0,255,242,0.15)");
+      grad.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(blackHole.x, blackHole.y, pulse, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Stars orbiting
+      for (let star of stars) star.draw();
+
+      requestAnimationFrame(animate);
+    }
+    animate();
   </script>
 </body>
 </html>
