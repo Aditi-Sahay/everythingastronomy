@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calculations | Everything Astronomy</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      background: radial-gradient(circle at top, #0b001a 0%, #000 80%);
+      color: #f5f5f5;
+      font-family: 'Orbitron', sans-serif;
+      overflow-x: hidden;
+    }
+
+    header {
+      text-align: center;
+      padding: 2rem 1rem;
+      color: #00fff2;
+      text-shadow: 0 0 15px #00fff2, 0 0 30px #00fff2;
+    }
+
+    .container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      padding: 2rem;
+      max-width: 1000px;
+      margin: auto;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(0, 255, 242, 0.2);
+      border-radius: 15px;
+      padding: 1.5rem;
+      box-shadow: 0 0 20px rgba(0, 255, 242, 0.1);
+      transition: 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 0 25px rgba(0, 255, 242, 0.3);
+    }
+
+    input {
+      width: 90%;
+      padding: 0.6rem;
+      margin: 0.5rem 0;
+      border: none;
+      border-radius: 8px;
+      outline: none;
+      font-family: 'Orbitron', sans-serif;
+      background: rgba(255, 255, 255, 0.1);
+      color: #00fff2;
+      text-align: center;
+    }
+
+    button {
+      background: #00fff2;
+      color: black;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      padding: 0.6rem 1.2rem;
+      cursor: pointer;
+      font-family: 'Orbitron', sans-serif;
+      transition: 0.3s ease;
+    }
+
+    button:hover {
+      background: #00bfb3;
+      transform: scale(1.05);
+    }
+
+    .result {
+      margin-top: 1rem;
+      color: #00fff2;
+      font-size: 1rem;
+      text-shadow: 0 0 8px #00fff2;
+    }
+
+    a.back {
+      display: inline-block;
+      margin: 2rem;
+      text-decoration: none;
+      color: #00fff2;
+      text-shadow: 0 0 10px #00fff2;
+      transition: 0.3s;
+    }
+
+    a.back:hover {
+      text-shadow: 0 0 20px #00fff2;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Calculations Hub</h1>
+    <p>Explore the math behind the cosmos</p>
+  </header>
+
+  <div class="container">
+
+    <!-- Escape Velocity -->
+    <div class="card">
+      <h2>Escape Velocity</h2>
+      <p>v = √(2GM / R)</p>
+      <input id="mass" type="number" placeholder="Mass (kg)" />
+      <input id="radius" type="number" placeholder="Radius (m)" />
+      <button onclick="escapeVelocity()">Calculate</button>
+      <div id="escape-result" class="result"></div>
+    </div>
+
+    <!-- Orbital Period -->
+    <div class="card">
+      <h2>Orbital Period</h2>
+      <p>T = 2π √(a³ / GM)</p>
+      <input id="semiMajor" type="number" placeholder="Semi-major axis (m)" />
+      <input id="mass2" type="number" placeholder="Central Mass (kg)" />
+      <button onclick="orbitalPeriod()">Calculate</button>
+      <div id="orbit-result" class="result"></div>
+    </div>
+
+    <!-- Surface Gravity -->
+    <div class="card">
+      <h2>Surface Gravity</h2>
+      <p>g = GM / R²</p>
+      <input id="mass3" type="number" placeholder="Mass (kg)" />
+      <input id="radius3" type="number" placeholder="Radius (m)" />
+      <button onclick="surfaceGravity()">Calculate</button>
+      <div id="gravity-result" class="result"></div>
+    </div>
+
+  </div>
+
+  <a href="index.html" class="back">← Back to Home</a>
+
+  <script>
+    const G = 6.67430e-11; // gravitational constant
+
+    function escapeVelocity() {
+      const M = parseFloat(document.getElementById('mass').value);
+      const R = parseFloat(document.getElementById('radius').value);
+      if (!M || !R) return alert("Enter valid values!");
+      const v = Math.sqrt((2 * G * M) / R);
+      document.getElementById('escape-result').innerText = `v = ${v.toExponential(3)} m/s`;
+    }
+
+    function orbitalPeriod() {
+      const a = parseFloat(document.getElementById('semiMajor').value);
+      const M = parseFloat(document.getElementById('mass2').value);
+      if (!a || !M) return alert("Enter valid values!");
+      const T = 2 * Math.PI * Math.sqrt(Math.pow(a, 3) / (G * M));
+      document.getElementById('orbit-result').innerText = `T = ${(T / 86400).toFixed(2)} days`;
+    }
+
+    function surfaceGravity() {
+      const M = parseFloat(document.getElementById('mass3').value);
+      const R = parseFloat(document.getElementById('radius3').value);
+      if (!M || !R) return alert("Enter valid values!");
+      const g = (G * M) / (R * R);
+      document.getElementById('gravity-result').innerText = `g = ${g.toFixed(2)} m/s²`;
+    }
+  </script>
+</body>
+</html>
