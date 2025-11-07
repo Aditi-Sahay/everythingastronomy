@@ -93,6 +93,28 @@
     a.back:hover {
       text-shadow: 0 0 20px #00fff2;
     }
+
+    .back-home {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-family: 'Orbitron', sans-serif;
+  text-decoration: none;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.back-home:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+  transform: translateX(-50%) scale(1.05);
+}
+
   </style>
 </head>
 <body>
@@ -136,10 +158,10 @@
 
   </div>
 
-  <a href="index.html" class="back">← Back to Home</a>
+  <a href="index.html" class="back-home">← Back to Home</a>
 
   <script>
-    const G = 6.67430e-11; // gravitational constant
+    const G = 6.67430e-11; 
 
     function escapeVelocity() {
       const M = parseFloat(document.getElementById('mass').value);
