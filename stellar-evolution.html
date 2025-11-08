@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stellar Evolution | Everything Astronomy</title>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Orbitron', sans-serif;
+      color: white;
+      overflow-x: hidden;
+      background: radial-gradient(ellipse at center, #050505 0%, #000010 100%);
+      height: 100vh;
+    }
+
+    /* floating particle effect */
+    .stars {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      overflow: hidden;
+    }
+    .star {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: white;
+      border-radius: 50%;
+      animation: drift 20s linear infinite;
+      opacity: 0.8;
+    }
+    @keyframes drift {
+      0% { transform: translateY(0px) translateX(0px); }
+      100% { transform: translateY(-1000px) translateX(500px); }
+    }
+
+    header {
+      text-align: center;
+      margin-top: 50px;
+    }
+    header h1 {
+      font-size: 3rem;
+      color: #fff;
+      text-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff;
+    }
+    header p {
+      font-size: 1rem;
+      color: #aaa;
+      margin-top: 5px;
+    }
+
+    /* central image + info box */
+    .content {
+      text-align: center;
+      margin-top: 60px;
+    }
+
+    .star-image {
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      margin: 0 auto;
+      box-shadow: 0 0 40px #00ffff;
+      transition: all 1s ease;
+    }
+
+    .info {
+      margin-top: 20px;
+      font-size: 1.1rem;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.6;
+      color: #d0d0d0;
+    }
+
+    /* timeline */
+    .timeline {
+      display: flex;
+      justify-content: center;
+      gap: 25px;
+      margin-top: 50px;
+      flex-wrap: wrap;
+    }
+    .stage {
+      cursor: pointer;
+      padding: 12px 20px;
+      border: 1px solid #00ffff;
+      border-radius: 25px;
+      transition: all 0.3s ease;
+    }
+    .stage:hover, .stage.active {
+      background-color: #00ffff;
+      color: #000;
+      transform: scale(1.05);
+      text-shadow: 0 0 8px #000;
+    }
+
+    /* back button */
+    .back-home {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-family: 'Orbitron', sans-serif;
+      text-decoration: none;
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+    }
+
+    .back-home:hover {
+      background-color: rgba(255, 255, 255, 0.3);
+      transform: translateX(-50%) scale(1.05);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="stars" id="stars"></div>
+
+  <header>
+    <h1>Stellar Evolution</h1>
+    <p>from cosmic dust to cosmic destiny</p>
+  </header>
+
+  <div class="content">
+    <img id="starImage" src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Orion_Nebula_-_Hubble_2006_mosaic_18000.jpg/800px-Orion_Nebula_-_Hubble_2006_mosaic_18000.jpg" class="star-image" />
+    <div id="infoBox" class="info">
+      A star begins its life within a vast nebula — a cloud of gas and dust drawn together by gravity.
+    </div>
+  </div>
+
+  <div class="timeline">
+    <div class="stage active" data-image="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Orion_Nebula_-_Hubble_2006_mosaic_18000.jpg/800px-Orion_Nebula_-_Hubble_2006_mosaic_18000.jpg" data-info="A star begins its life within a vast nebula — a cloud of gas and dust drawn together by gravity.">Nebula</div>
+
+    <div class="stage" data-image="https://upload.wikimedia.org/wikipedia/commons/4/47/Protostar_in_Carina_Nebula.jpg" data-info="As the gas collapses, pressure and heat rise, forming a protostar — the stellar embryo.">Protostar</div>
+
+    <div class="stage" data-image="https://upload.wikimedia.org/wikipedia/commons/2/20/Sun_in_February_2001_-_ULYSSES_and_SOHO.jpg" data-info="The main sequence: hydrogen fusion begins, and the star shines steadily for billions of years.">Main Sequence</div>
+
+    <div class="stage" data-image="https://upload.wikimedia.org/wikipedia/commons/3/3f/Red_Giant_star.jpg" data-info="As hydrogen runs low, the core contracts and outer layers expand — the star becomes a red giant.">Red Giant</div>
+
+    <div class="stage" data-image="https://upload.wikimedia.org/wikipedia/commons/0/07/SN1994D.jpg" data-info="In massive stars, collapse triggers a supernova — a brilliant explosion dispersing heavy elements.">Supernova</div>
+
+    <div class="stage" data-image="https://upload.wikimedia.org/wikipedia/commons/d/d2/Crab_Nebula.jpg" data-info="Depending on its mass, the remnant becomes a neutron star or collapses into a black hole.">Remnant</div>
+  </div>
+
+  <a href="index.html" class="back-home">← Back to Home</a>
+
+  <script>
+    // particle generation
+    const starsContainer = document.getElementById("stars");
+    for (let i = 0; i < 150; i++) {
+      const star = document.createElement("div");
+      star.classList.add("star");
+      star.style.top = Math.random() * 100 + "%";
+      star.style.left = Math.random() * 100 + "%";
+      star.style.animationDuration = 10 + Math.random() * 20 + "s";
+      star.style.opacity = Math.random();
+      starsContainer.appendChild(star);
+    }
+
+    // interactive timeline logic
+    const stages = document.querySelectorAll(".stage");
+    const starImage = document.getElementById("starImage");
+    const infoBox = document.getElementById("infoBox");
+
+    stages.forEach(stage => {
+      stage.addEventListener("click", () => {
+        stages.forEach(s => s.classList.remove("active"));
+        stage.classList.add("active");
+        starImage.src = stage.dataset.image;
+        infoBox.textContent = stage.dataset.info;
+      });
+    });
+  </script>
+</body>
+</html>
