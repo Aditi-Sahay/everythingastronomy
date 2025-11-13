@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Underworks | Everything Astronomy</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --accent:#00fff2;
+    --bg:#020015;
+    --muted:#a0b7c2;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{
+    height:100%;
+    background:radial-gradient(circle at 20% 20%, #060022, #010010 80%);
+    font-family:'Orbitron',sans-serif;
+    color:white;
+    overflow:hidden;
+  }
+
+  /* animated particle background */
+  canvas{position:fixed;inset:0;z-index:0}
+
+  main{
+    position:relative;
+    z-index:2;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    height:100vh;
+    text-align:center;
+    padding:20px;
+  }
+
+  h1{
+    font-size:clamp(2rem,5vw,4rem);
+    color:var(--accent);
+    text-shadow:0 0 20px rgba(0,255,242,0.4);
+    margin-bottom:12px;
+  }
+  p{color:var(--muted);max-width:700px;line-height:1.6;font-size:1.1rem;margin-bottom:40px}
+
+  .loader{
+    display:flex;
+    justify-content:center;
+    gap:10px;
+    margin-bottom:30px;
+  }
+  .dot{
+    width:12px;height:12px;border-radius:50%;
+    background-color:var(--accent);
+    opacity:.6;
+    animation:blink 1.4s infinite;
+  }
+  .dot:nth-child(2){animation-delay:.2s}
+  .dot:nth-child(3){animation-delay:.4s}
+
+  @keyframes blink{
+    0%,80%,100%{transform:scale(0);opacity:.4}
+    40%{transform:scale(1);opacity:1}
+  }
+
+  .under-list{
+    margin-top:20px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:10px;
+  }
+  .under-list a{
+    color:var(--accent);
+    text-decoration:none;
+    font-weight:700;
+    transition:color .3s ease,text-shadow .3s ease;
+  }
+  .under-list a:hover{
+    text-shadow:0 0 10px var(--accent);
+  }
+
+  a.back-home{
+    position:fixed;
+    bottom:24px;
+    left:50%;
+    transform:translateX(-50%);
+    color:white;
+    text-decoration:none;
+    background-color:rgba(255,255,255,0.07);
+    border:1px solid rgba(255,255,255,0.15);
+    border-radius:18px;
+    padding:10px 22px;
+    backdrop-filter:blur(6px);
+    z-index:4;
+    transition:background .25s ease,transform .25s ease;
+  }
+  a.back-home:hover{
+    background-color:rgba(255,255,255,0.14);
+    transform:translateX(-50%) scale(1.05);
+  }
+</style>
+</head>
+<body>
+
+<canvas id="stars"></canvas>
+
+<main>
+  <h1>Underworks</h1>
+  <div class="loader">
+    <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+  </div>
+  <p>This section of the cosmos is still being engineered.  
+     Prototypes spin in silence, code hums through the vacuum —  
+     new experiences are forming behind the curtain of dark matter.</p>
+
+  <div class="under-list">
+    <a href="#">☄️ Fun Zone – re-design incoming</a>
+    <a href="#">🌠 Constellation Creator – testing phase</a>
+    <a href="#">🪐 Exoplanet Explorer – under calibration</a>
+  </div>
+</main>
+
+<a href="index.html" class="back-home">← Back to Home</a>
+
+<script>
+/* star particle animation */
+const canvas=document.getElementById('stars');
+const ctx=canvas.getContext('2d');
+let w=canvas.width=innerWidth;
+let h=canvas.height=innerHeight;
+let stars=[];
+
+function rand(min,max){return Math.random()*(max-min)+min}
+function reset(){
+  w=canvas.width=innerWidth;
+  h=canvas.height=innerHeight;
+  stars=[];
+  for(let i=0;i<160;i++){
+    stars.push({x:rand(0,w),y:rand(0,h),r:rand(0.3,1.6),vx:rand(-0.1,0.1),vy:rand(-0.1,0.1)});
+  }
+}
+reset();
+window.addEventListener('resize',reset);
+
+function animate(){
+  ctx.clearRect(0,0,w,h);
+  for(let s of stars){
+    s.x+=s.vx;
+    s.y+=s.vy;
+    if(s.x<0)s.x=w;
+    if(s.x>w)s.x=0;
+    if(s.y<0)s.y=h;
+    if(s.y>h)s.y=0;
+    ctx.beginPath();
+    ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+    ctx.fillStyle='rgba(255,255,255,0.7)';
+    ctx.fill();
+  }
+  requestAnimationFrame(animate);
+}
+animate();
+</script>
+
+</body>
+</html>
