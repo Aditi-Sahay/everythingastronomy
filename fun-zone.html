@@ -1,1 +1,528 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Fun Zone | Everything Astronomy</title>
 
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg-deep:#030013;
+      --accent:#00fff2;
+      --muted:#bfc7d1;
+      --card-bg: rgba(255,255,255,0.04);
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%;font-family:'Orbitron',sans-serif;background:var(--bg-deep);color:#fff;overflow-x:hidden}
+    canvas#bg{position:fixed;inset:0;z-index:0;display:block}
+    .nebula{position:fixed;inset:0;z-index:1;pointer-events:none;background:
+      radial-gradient(30% 20% at 10% 20%, rgba(120,20,255,0.06), transparent 12%),
+      radial-gradient(40% 30% at 85% 70%, rgba(0,200,255,0.05), transparent 12%);
+      filter: blur(26px) saturate(120%);mix-blend-mode:screen;opacity:0.95}
+    .wrap{position:relative;z-index:2;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:70px 20px}
+    header{ text-align:center; margin-bottom:28px}
+    header h1{font-size:clamp(1.6rem,3.8vw,3rem);color:var(--accent);text-shadow:0 0 18px rgba(0,255,242,0.12)}
+    header p{color:var(--muted);max-width:900px}
+
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;width:100%;max-width:1100px;margin-top:28px}
+    .card{
+      background:var(--card-bg);
+      border:1px solid rgba(0,255,242,0.08);
+      padding:18px;border-radius:14px;min-height:160px;
+      display:flex;flex-direction:column;justify-content:space-between;transition:transform .25s ease,box-shadow .25s;
+    }
+    .card:hover{transform:translateY(-6px);box-shadow:0 14px 40px rgba(0,0,0,0.6)}
+    .card h3{color:var(--accent);margin-bottom:8px}
+    .card p{color:var(--muted);font-size:0.95rem;margin-bottom:10px}
+
+    .btn{display:inline-block;background:var(--accent);color:#001;padding:8px 12px;border-radius:10px;text-decoration:none;font-weight:700;border:none;cursor:pointer;font-family:'Orbitron'}
+    .small{padding:6px 10px;font-size:0.9rem}
+
+    .modal {
+      position: fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:6;
+      background: linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.75));
+      padding: 40px;
+    }
+    .modal.open{display:flex}
+    .panel {
+      width: min(940px,95%); max-height:90vh; overflow:auto; border-radius:12px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.35));
+      border:1px solid rgba(0,255,242,0.06); padding:22px; box-shadow:0 30px 80px rgba(0,0,0,0.7);
+    }
+    .panel header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+    .panel h2{color:var(--accent);margin:0}
+    .close{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted);padding:8px 10px;border-radius:8px;cursor:pointer}
+
+    /* quiz */
+    .quiz-question{font-weight:600;margin-bottom:10px}
+    .choices{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+    .choice{background:rgba(255,255,255,0.03);padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);cursor:pointer}
+    .choice.correct{background:rgba(0,255,242,0.12);border-color:rgba(0,255,242,0.22)}
+    .choice.wrong{background:rgba(255,80,80,0.08);border-color:rgba(255,80,80,0.15)}
+    .result{margin-top:12px;color:var(--muted)}
+
+    /* star simulator */
+    .sim-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+    .sim-output{background:rgba(255,255,255,0.02);padding:12px;border-radius:10px;border:1px solid rgba(0,255,242,0.04);min-width:220px}
+
+    /* guess image */
+    .guess-img{width:100%;max-width:720px;border-radius:10px;display:block;margin:12px auto;filter:blur(14px);transition:filter .6s ease, transform .6s}
+    .reveal{filter:none}
+    .guess-box{display:flex;gap:10px;justify-content:center;margin-top:8px}
+
+    /* constellation canvas */
+    .draw-area{background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.25));border-radius:10px;padding:10px;border:1px solid rgba(255,255,255,0.03)}
+    canvas#constellation{width:100%;height:360px;border-radius:8px;background:transparent;display:block}
+
+    /* footer/back */
+    .back-home{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:5;background:rgba(255,255,255,0.06);border-radius:18px;padding:8px 14px;color:#fff;text-decoration:none;border:1px solid rgba(255,255,255,0.1)}
+    .back-home:hover{transform:translateX(-50%) scale(1.04)}
+    @media (max-width:640px){ .grid{grid-template-columns:1fr} .card{min-height:140px} }
+  </style>
+</head>
+<body>
+
+  <canvas id="bg"></canvas>
+  <div class="nebula" aria-hidden="true"></div>
+
+  <div class="wrap">
+    <header>
+      <h1>Fun Zone</h1>
+      <p>Quick games, tiny experiments, and ridiculous cosmic facts. Pick a module and let’s waste some productive minutes.</p>
+    </header>
+
+    <div class="grid">
+      <div class="card">
+        <div>
+          <h3>Quizzer 🧠</h3>
+          <p>Quick 5-question astronomy pop quiz with instant feedback and score.</p>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <button class="btn" onclick="openModal('quizModal')">Play</button>
+          <div style="color:var(--muted);font-size:0.9rem">Time: 3–4 minutes</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div>
+          <h3>Star Simulator ⭐</h3>
+          <p>Slide mass (in solar masses) and see predicted lifetime, color and end state.</p>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <button class="btn" onclick="openModal('starModal')">Launch</button>
+          <div style="color:var(--muted);font-size:0.9rem">Physics-lite</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div>
+          <h3>Space Facts 🪐</h3>
+          <p>Press the button for a random cosmic fact. Shareable bragging rights included.</p>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <button class="btn" onclick="openModal('factsModal')">Surprise me</button>
+          <div style="color:var(--muted);font-size:0.9rem">Tiny dopamine hit</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div>
+          <h3>Guess That Object 🔭</h3>
+          <p>Guess the object from a blurred image. Get it right to feel smug.</p>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <button class="btn" onclick="openModal('guessModal')">Try</button>
+          <div style="color:var(--muted);font-size:0.9rem">Beginner-friendly</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div>
+          <h3>Constellation Creator ✨</h3>
+          <p>Click to place stars, connect them, name your constellation, and save the image.</p>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <button class="btn" onclick="openModal('constModal')">Create</button>
+          <div style="color:var(--muted);font-size:0.9rem">Art + astronomy</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <a class="back-home" href="index.html">← Back to Home</a>
+
+  <div id="quizModal" class="modal" aria-hidden="true">
+    <div class="panel" role="dialog" aria-modal="true">
+      <header>
+        <h2>Quizzer</h2>
+        <button class="close" onclick="closeModal('quizModal')">Close</button>
+      </header>
+
+      <div id="quizBody">
+      </div>
+    </div>
+  </div>
+
+  <div id="starModal" class="modal" aria-hidden="true">
+    <div class="panel">
+      <header>
+        <h2>Star Simulator</h2>
+        <button class="close" onclick="closeModal('starModal')">Close</button>
+      </header>
+
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="sim-row">
+          <label style="min-width:120px">Mass (M⊙):</label>
+          <input id="massInput" type="range" min="0.1" max="80" step="0.1" value="1" oninput="updateStarSim()" style="flex:1">
+          <div class="sim-output" id="massValue">1.0 M⊙</div>
+        </div>
+
+        <div class="sim-row">
+          <label style="min-width:120px">Metallicity (Z):</label>
+          <input id="metalInput" type="range" min="0.0001" max="0.03" step="0.0001" value="0.014" oninput="updateStarSim()" style="flex:1">
+          <div class="sim-output" id="metalValue">Z=0.014</div>
+        </div>
+
+        <div id="simResult" class="sim-output" style="margin-top:6px">
+          Lifetime: — <br> Color: — <br> Fate: —
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="factsModal" class="modal" aria-hidden="true">
+    <div class="panel">
+      <header>
+        <h2>Space Facts</h2>
+        <button class="close" onclick="closeModal('factsModal')">Close</button>
+      </header>
+
+      <div style="text-align:center">
+        <div id="factText" style="font-size:1.05rem;color:var(--muted);min-height:72px;padding:12px"></div>
+        <div style="margin-top:12px">
+          <button class="btn" onclick="randomFact()">Another</button>
+          <button class="btn small" onclick="copyFact()">Copy</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <div id="guessModal" class="modal" aria-hidden="true">
+    <div class="panel">
+      <header>
+        <h2>Guess That Object</h2>
+        <button class="close" onclick="closeModal('guessModal')">Close</button>
+      </header>
+
+      <div style="text-align:center">
+        <img id="guessImage" class="guess-img" src="" alt="Guess object">
+        <div class="guess-box">
+          <input id="guessInput" placeholder="Type your guess (e.g. 'Andromeda')" style="padding:10px;border-radius:8px;border:none;background:rgba(255,255,255,0.03);color:#fff;flex:1;min-width:180px">
+          <button class="btn small" onclick="checkGuess()">Submit</button>
+          <button class="btn small" onclick="revealObject()">Reveal</button>
+        </div>
+        <div id="guessResult" style="margin-top:10px;color:var(--muted)"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="constModal" class="modal" aria-hidden="true">
+    <div class="panel">
+      <header>
+        <h2>Constellation Creator</h2>
+        <div>
+          <button class="close" onclick="closeModal('constModal')">Close</button>
+        </div>
+      </header>
+
+      <div class="draw-area">
+        <canvas id="constellation"></canvas>
+        <div style="display:flex;gap:8px;margin-top:8px;align-items:center;flex-wrap:wrap">
+          <button class="btn small" onclick="clearCanvas()">Clear</button>
+          <button class="btn small" onclick="downloadConstellation()">Save Image</button>
+          <button class="btn small" onclick="nameConstellation()">Name it</button>
+          <div id="constName" style="margin-left:10px;color:var(--muted)"></div>
+        </div>
+        <p style="color:var(--muted);margin-top:8px;font-size:0.9rem">Click anywhere to add a star. Drag to pan is not required — this is a simple canvas.</p>
+      </div>
+    </div>
+  </div>
+
+<script>
+//---------------
+const bg = document.getElementById('bg');
+const ctx = bg.getContext('2d');
+let W = bg.width = innerWidth;
+let H = bg.height = innerHeight;
+window.addEventListener('resize', () => { W = bg.width = innerWidth; H = bg.height = innerHeight; initBG() });
+
+let stars = [], asteroids = [];
+function rand(a,b){ return Math.random()*(b-a)+a }
+function initBG(){
+  stars = [];
+  for(let i=0;i<220;i++){
+    stars.push({x:rand(0,W),y:rand(0,H),r:rand(0.3,1.7),v:rand(0.02,0.4)});
+  }
+  asteroids = [];
+  for(let i=0;i<8;i++){
+    asteroids.push({x:rand(0,W),y:rand(0,H),r:rand(8,26),vx:rand(-0.2,0.2),vy:rand(-0.05,0.05),rot:rand(0,Math.PI*2)});
+  }
+}
+function frame(t){
+  ctx.clearRect(0,0,W,H);
+  // stars
+  for(let s of stars){
+    s.x += s.v * (t*0.00004);
+    if(s.x > W+10) s.x = -10;
+    ctx.fillStyle = 'rgba(255,255,255,0.9)';
+    ctx.beginPath(); ctx.arc(s.x, s.y, s.r,0,Math.PI*2); ctx.fill();
+  }
+  // asteroids
+  for(let a of asteroids){
+    a.x += a.vx * (t*0.00006);
+    a.y += a.vy * (t*0.00003);
+    a.rot += 0.002;
+    if(a.x < -60) a.x = W + 60;
+    if(a.y < -60) a.y = H + 60;
+    if(a.x > W + 60) a.x = -60;
+    ctx.save();
+    ctx.translate(a.x, a.y);
+    ctx.rotate(Math.sin(a.rot)*0.15);
+    ctx.fillStyle = 'rgba(120,120,130,0.06)';
+    ctx.beginPath();
+    ctx.ellipse(0,0,a.r,a.r*0.7,0,0,Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+  }
+  requestAnimationFrame(frame);
+}
+initBG(); requestAnimationFrame(frame);
+
+//---------------
+function openModal(id){
+  document.getElementById(id).classList.add('open');
+  document.getElementById(id).setAttribute('aria-hidden','false');
+
+  const inp = document.querySelector('#'+id+' input');
+  if(inp) inp.focus();
+}
+function closeModal(id){
+  document.getElementById(id).classList.remove('open');
+  document.getElementById(id).setAttribute('aria-hidden','true');
+}
+
+//------------
+  
+const quizQuestions = [
+  {q:"Which element fuels main-sequence stars like the Sun?", choices:["Helium","Hydrogen","Carbon","Oxygen"], a:1},
+  {q:"Roughly how old is the universe?", choices:["4.6 billion years","13.8 billion years","100 billion years","1.4 million years"], a:1},
+  {q:"What kind of object is the Crab Nebula's central remnant?", choices:["Black hole","White dwarf","Neutron star (pulsar)","Gas cloud"], a:2},
+  {q:"Which planet has the shortest day (fastest rotation)?", choices:["Earth","Jupiter","Mars","Venus"], a:1},
+  {q:"What causes a meteor shower?", choices:["Comet debris entering atmosphere","Solar wind","Planetary alignment","Volcanoes"], a:0}
+];
+let quizIndex=0, quizScore=0;
+function startQuiz(){
+  quizIndex=0; quizScore=0; renderQuiz();
+}
+function renderQuiz(){
+  const container = document.getElementById('quizBody');
+  const q = quizQuestions[quizIndex];
+  container.innerHTML = '';
+  const qDiv = document.createElement('div');
+  qDiv.innerHTML = `<div class="quiz-question">Q${quizIndex+1}. ${q.q}</div>`;
+  const choices = document.createElement('div'); choices.className='choices';
+  q.choices.forEach((c,i)=>{
+    const btn = document.createElement('div');
+    btn.className='choice';
+    btn.textContent = c;
+    btn.onclick = () => selectChoice(i,btn);
+    choices.appendChild(btn);
+  });
+  qDiv.appendChild(choices);
+  qDiv.innerHTML += `<div class="result" id="quizStatus">Question ${quizIndex+1} of ${quizQuestions.length}</div>`;
+  container.appendChild(qDiv);
+}
+function selectChoice(i,el){
+  const q = quizQuestions[quizIndex];
+  const all = document.querySelectorAll('.choice');
+  // disable all
+  all.forEach(c=>c.style.pointerEvents='none');
+  if(i===q.a){ el.classList.add('correct'); quizScore++; document.getElementById('quizStatus').textContent = "Correct!"; }
+  else { el.classList.add('wrong'); 
+    // reveal correct
+    const correct = Array.from(all).find((_,idx)=> idx===q.a);
+    if(correct) correct.classList.add('correct');
+    document.getElementById('quizStatus').textContent = "Incorrect!";
+  }
+  setTimeout(()=> {
+    quizIndex++;
+    if(quizIndex < quizQuestions.length) renderQuiz();
+    else showQuizResult();
+  }, 900);
+}
+function showQuizResult(){
+  const c = document.getElementById('quizBody');
+  c.innerHTML = `<div style="text-align:center"><h3 style="color:var(--accent)">Result</h3>
+    <p style="color:var(--muted)">Score: ${quizScore} / ${quizQuestions.length}</p>
+    <div style="margin-top:10px"><button class="btn" onclick="startQuiz()">Play Again</button></div>
+  </div>`;
+}
+
+document.querySelector('[onclick="openModal(\'quizModal\')"]').addEventListener('click', ()=>{ setTimeout(startQuiz,80) });
+
+//------------------
+  
+function updateStarSim(){
+  const m = parseFloat(document.getElementById('massInput').value);
+  const z = parseFloat(document.getElementById('metalInput').value);
+  document.getElementById('massValue').textContent = m.toFixed(1)+' M⊙';
+  document.getElementById('metalValue').textContent = 'Z='+z.toFixed(4);
+
+  const lifetime = 1e10 * Math.pow(1/m, 2.5);
+  let color='Yellow (G-type)';
+  if(m < 0.5) color = 'Red (M-type)';
+  else if(m < 1.8) color = 'Yellow/White (F/G-type)';
+  else if(m < 3.3) color = 'White (A-type)';
+  else if(m < 16) color = 'Blue-White (B-type)';
+  else color = 'Blue (O-type)';
+  let fate = 'White Dwarf';
+  if(m >= 8 && m < 20) fate = 'Neutron Star (possible pulsar)';
+  if(m >= 20) fate = 'Black Hole (core collapse)';
+  const Zfactor = 1 - (z - 0.014) * 2.0;
+  const lAdj = Math.max(1e6, lifetime * Zfactor);
+  document.getElementById('simResult').innerHTML = `Lifetime (approx): <strong>${(lAdj/1e6).toFixed(2)} million years</strong><br>Color: <strong>${color}</strong><br>Likely Fate: <strong>${fate}</strong>`;
+}
+updateStarSim();
+
+//------
+
+  
+const facts = [
+  "There are more stars in the observable universe than grains of sand on all Earth's beaches.",
+  "Neutron stars can spin hundreds of times per second and have surface gravity ~10^11 times Earth's.",
+  "A teaspoon of a neutron star would weigh about a billion tons on Earth.",
+  "The light from the earliest observable galaxies started its journey over 13 billion years ago.",
+  "Space is not empty: it's filled with tenuous gas, radiation and dark matter we can't see directly.",
+  "Saturn's rings are mostly water ice and they can be as thin as 10 meters in places.",
+  "The Sun will become a red giant in roughly 5 billion years."
+];
+function randomFact(){
+  const f = facts[Math.floor(Math.random()*facts.length)];
+  document.getElementById('factText').textContent = f;
+}
+function copyFact(){
+  const t = document.getElementById('factText').textContent;
+  navigator.clipboard?.writeText(t).then(()=> alert('Copied fact!'), ()=> alert('Couldn’t copy'));
+}
+document.querySelector('[onclick="openModal(\'factsModal\')"]').addEventListener('click', ()=>{ setTimeout(randomFact,80) });
+
+//--------
+const guessSet = [
+  {src:'https://upload.wikimedia.org/wikipedia/commons/5/5f/Andromeda_Galaxy_%28with_h-alpha%29.jpg', name:'Andromeda Galaxy'},
+  {src:'https://upload.wikimedia.org/wikipedia/commons/3/3f/Messier_51_-_Whirlpool_Galaxy.jpg', name:'Whirlpool Galaxy'},
+  {src:'https://upload.wikimedia.org/wikipedia/commons/3/3f/NGC_2392_-_Eskimo_Nebula.jpg', name:'Eskimo Nebula'},
+  {src:'https://upload.wikimedia.org/wikipedia/commons/6/6d/PIA19949-Mars20161031.jpg', name:'Mars'},
+  {src:'https://upload.wikimedia.org/wikipedia/commons/3/33/Orion_Nebula_-_HST_-_Heic0224a.jpg', name:'Orion Nebula'}
+];
+let currentGuess = null;
+function prepareGuess(){
+  currentGuess = guessSet[Math.floor(Math.random()*guessSet.length)];
+  const img = document.getElementById('guessImage');
+  img.src = currentGuess.src;
+  img.classList.remove('reveal');
+  document.getElementById('guessResult').textContent = '';
+  document.getElementById('guessInput').value = '';
+}
+function checkGuess(){
+  const g = document.getElementById('guessInput').value.trim().toLowerCase();
+  if(!g) return;
+  if(currentGuess.name.toLowerCase().includes(g) || g.includes(currentGuess.name.toLowerCase().split(' ')[0])){
+    document.getElementById('guessResult').textContent = 'Correct! Nice eye.';
+    document.getElementById('guessImage').classList.add('reveal');
+  } else {
+    document.getElementById('guessResult').textContent = 'Nope — try again or reveal.';
+  }
+}
+function revealObject(){
+  document.getElementById('guessImage').classList.add('reveal');
+  document.getElementById('guessResult').textContent = 'Answer: ' + currentGuess.name;
+}
+document.querySelector('[onclick="openModal(\'guessModal\')"]').addEventListener('click', ()=>{ setTimeout(prepareGuess,50) });
+
+//-----------
+  
+const canvas = document.getElementById('constellation');
+const dpr = window.devicePixelRatio || 1;
+function resizeCanvas(){
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = 360 * dpr;
+  canvas.style.height = '360px';
+  drawAll();
+}
+window.addEventListener('resize', resizeCanvas);
+const ctxC = canvas.getContext('2d');
+let starsPts = [];
+function clearCanvas(){ starsPts=[]; drawAll(); document.getElementById('constName').textContent=''; }
+function drawAll(){
+  if(!ctxC) return;
+  ctxC.clearRect(0,0,canvas.width,canvas.height);
+  // background faint stars
+  ctxC.fillStyle = 'rgba(255,255,255,0.015)';
+  for(let i=0;i<200;i++){
+    const x = Math.random()*canvas.width;
+    const y = Math.random()*canvas.height;
+    ctxC.beginPath(); ctxC.arc(x,y,Math.random()*1.2,0,Math.PI*2); ctxC.fill();
+  }
+  // draw lines
+  ctxC.strokeStyle = 'rgba(0,255,242,0.18)';
+  ctxC.lineWidth = 2;
+  ctxC.beginPath();
+  for(let i=0;i<starsPts.length;i++){
+    const p = starsPts[i];
+    if(i===0) ctxC.moveTo(p.x*p.dpr, p.y*p.dpr);
+    else ctxC.lineTo(p.x*p.dpr, p.y*p.dpr);
+  }
+  ctxC.stroke();
+
+  for(let p of starsPts){
+    ctxC.fillStyle = 'rgba(255,255,255,0.95)';
+    ctxC.beginPath(); ctxC.arc(p.x*p.dpr, p.y*p.dpr, 4*p.dpr,0,Math.PI*2); ctxC.fill();
+
+    ctxC.fillStyle = 'rgba(0,255,242,0.06)';
+    ctxC.beginPath(); ctxC.arc(p.x*p.dpr, p.y*p.dpr, 10*p.dpr,0,Math.PI*2); ctxC.fill();
+  }
+}
+canvas.addEventListener('click', (e)=>{
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  starsPts.push({x:x, y:y, dpr:dpr});
+  drawAll();
+});
+function downloadConstellation(){
+  const link = document.createElement('a');
+  link.download = 'constellation.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+function nameConstellation(){
+  const names = ['Ria Major','Stella Noctis','Aetheris','Lacuna','Nova Minoris','Astrum Prae','Voidflower'];
+  const pick = names[Math.floor(Math.random()*names.length)];
+  document.getElementById('constName').textContent = 'Name: ' + pick;
+}
+resizeCanvas();
+
+
+  
+window.addEventListener('keydown', (e)=>{
+  if(e.key==='Escape'){
+    document.querySelectorAll('.modal.open').forEach(m => m.classList.remove('open'));
+  }
+});
+</script>
+
+</body>
+</html>
