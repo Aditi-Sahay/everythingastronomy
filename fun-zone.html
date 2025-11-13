@@ -93,18 +93,6 @@
       <p>Quick games, tiny experiments, and ridiculous cosmic facts. Pick a module and let’s waste some productive minutes.</p>
     </header>
 
-    <div class="grid">
-      <div class="card">
-        <div>
-          <h3>Quizzer 🧠</h3>
-          <p>Quick 5-question astronomy pop quiz with instant feedback and score.</p>
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <button class="btn" onclick="openModal('quizModal')">Play</button>
-          <div style="color:var(--muted);font-size:0.9rem">Time: 3–4 minutes</div>
-        </div>
-      </div>
-
       <div class="card">
         <div>
           <h3>Star Simulator ⭐</h3>
@@ -129,17 +117,6 @@
 
       <div class="card">
         <div>
-          <h3>Guess That Object 🔭</h3>
-          <p>Guess the object from a blurred image. Get it right to feel smug.</p>
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <button class="btn" onclick="openModal('guessModal')">Try</button>
-          <div style="color:var(--muted);font-size:0.9rem">Beginner-friendly</div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div>
           <h3>Constellation Creator ✨</h3>
           <p>Click to place stars, connect them, name your constellation, and save the image.</p>
         </div>
@@ -152,18 +129,6 @@
   </div>
 
   <a class="back-home" href="index.html">← Back to Home</a>
-
-  <div id="quizModal" class="modal" aria-hidden="true">
-    <div class="panel" role="dialog" aria-modal="true">
-      <header>
-        <h2>Quizzer</h2>
-        <button class="close" onclick="closeModal('quizModal')">Close</button>
-      </header>
-
-      <div id="quizBody">
-      </div>
-    </div>
-  </div>
 
   <div id="starModal" class="modal" aria-hidden="true">
     <div class="panel">
@@ -208,25 +173,6 @@
     </div>
   </div>
 
-
-  <div id="guessModal" class="modal" aria-hidden="true">
-    <div class="panel">
-      <header>
-        <h2>Guess That Object</h2>
-        <button class="close" onclick="closeModal('guessModal')">Close</button>
-      </header>
-
-      <div style="text-align:center">
-        <img id="guessImage" class="guess-img" src="" alt="Guess object">
-        <div class="guess-box">
-          <input id="guessInput" placeholder="Type your guess (e.g. 'Andromeda')" style="padding:10px;border-radius:8px;border:none;background:rgba(255,255,255,0.03);color:#fff;flex:1;min-width:180px">
-          <button class="btn small" onclick="checkGuess()">Submit</button>
-          <button class="btn small" onclick="revealObject()">Reveal</button>
-        </div>
-        <div id="guessResult" style="margin-top:10px;color:var(--muted)"></div>
-      </div>
-    </div>
-  </div>
 
   <div id="constModal" class="modal" aria-hidden="true">
     <div class="panel">
